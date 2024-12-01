@@ -1,0 +1,8 @@
+[package]
+name = "advent_of_code_2024"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+token-read = "0.2.0"
+anyhow = "1.0.93"
