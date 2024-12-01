@@ -27,7 +27,7 @@ fn get_lists() -> Result<(Vec<u32>, Vec<u32>)> {
 /*
 Pair the list in ascending order and sum distance from each pair
 */
-fn find_distances() -> Result<u32> {
+fn find_distance() -> Result<u32> {
     let (mut left_list, mut right_list) = get_lists()?;
     left_list.sort();
     right_list.sort();
@@ -52,21 +52,21 @@ fn find_similarity_score() -> Result<u32> {
             .or_insert(1);
     }
 
-	let res = left_list.into_iter().fold(0, |acc, left_num| {
-		if let Some(right_counter) = right_list_counter.get(&left_num) {
-			acc + (left_num * right_counter)
-		} else {
-			acc
-		}
-	});
-	
-	Ok(res)
+    let res = left_list.into_iter().fold(0, |acc, left_num| {
+        if let Some(right_counter) = right_list_counter.get(&left_num) {
+            acc + (left_num * right_counter)
+        } else {
+            acc
+        }
+    });
+
+    Ok(res)
 }
 
 #[test]
 fn test_day_one() {
-    let res = find_distances().unwrap();
+    let res = find_distance().unwrap();
     dbg!(res);
-	let res = find_similarity_score().unwrap();
-	dbg!(res);
+    let res = find_similarity_score().unwrap();
+    dbg!(res);
 }
