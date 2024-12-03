@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 token-read = "0.2.0"
 anyhow = "1.0.93"
+regex = "1.11.1"

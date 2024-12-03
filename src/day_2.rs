@@ -70,7 +70,7 @@ fn test_small_input() {
         // vec![1,1,2]
         // vec![1, 3, 2, 4, 5],
         // vec![4, 5, 3],
-		vec![5,6,3,2,1]
+        vec![5, 6, 3, 2, 1],
     ];
 
     // assert_eq!(validate_levels(levels).unwrap(), 2);
@@ -82,5 +82,5 @@ fn test_day_two() {
     let levels = read_levels();
     let res = validate_levels(levels);
     // part 2 for valid answer
-	assert_eq!(res.unwrap(), 366);
+    assert_eq!(res.unwrap(), 366);
 }
