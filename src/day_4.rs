@@ -37,8 +37,7 @@ s a x s
 Result: 2, vertical, horizontal, diagonal
 DFS on each x
 */
-fn count_xmas(matrix: Vec<Vec<char>>) -> i32 {
-    dbg!(&matrix);
+fn count_xmas(matrix: Vec<Vec<char>>) -> (i32, i32) {
     let direction: Vec<(isize, isize)> = vec![
         (0, 1),
         (0, -1),
@@ -50,21 +49,93 @@ fn count_xmas(matrix: Vec<Vec<char>>) -> i32 {
         (1, -1),
     ];
     let mut count_xmas = 0;
+    let mut count_x_mas = 0;
+
+    let first_validation: Vec<(char, (isize, isize))> = vec![
+        ('m', (-1, -1)),
+        ('m', (1, -1)),
+        ('s', (-1, 1)),
+        ('s', (1, 1)),
+    ];
+    let second_validation: Vec<(char, (isize, isize))> = vec![
+        ('s', (-1, -1)),
+        ('m', (1, -1)),
+        ('s', (-1, 1)),
+        ('m', (1, 1)),
+    ];
+    let third_validation: Vec<(char, (isize, isize))> = vec![
+        ('s', (-1, -1)),
+        ('s', (1, -1)),
+        ('m', (-1, 1)),
+        ('m', (1, 1)),
+    ];
+    let fourth_validation: Vec<(char, (isize, isize))> = vec![
+        ('m', (-1, -1)),
+        ('s', (1, -1)),
+        ('m', (-1, 1)),
+        ('s', (1, 1)),
+    ];
 
     for i in 0..matrix.len() {
         for j in 0..matrix[0].len() {
             if matrix[i][j] == 'x' {
                 direction.iter().for_each(|dir| {
-                    count_xmas += traverse_xmas_straight(&matrix, i as isize, j as isize, dir.to_owned());
+                    count_xmas +=
+                        traverse_xmas_straight(&matrix, i as isize, j as isize, dir.to_owned());
                 });
+            }
+            if matrix[i][j] == 'a' {
+                if validate_x_mas(&matrix, i as isize, j as isize, &first_validation)
+                    || validate_x_mas(&matrix, i as isize, j as isize, &second_validation)
+                    ||validate_x_mas(&matrix, i as isize, j as isize, &third_validation)
+                    || validate_x_mas(&matrix, i as isize, j as isize, &fourth_validation)
+                {
+                    count_x_mas += 1;
+                }
             }
         }
     }
 
-    count_xmas
+    (count_xmas, count_x_mas)
 }
 
-fn traverse_xmas_straight(matrix: &Vec<Vec<char>>, row: isize, col: isize, dir: (isize, isize)) -> i32 {
+type Validation = Vec<(char, (isize, isize))>;
+
+fn validate_x_mas(
+    matrix: &Vec<Vec<char>>,
+    row: isize,
+    col: isize,
+    validation: &Validation,
+) -> bool {
+    let row_len = matrix.len() as isize;
+    let col_len = matrix[0].len() as isize;
+
+    for (expected_char, (r, c)) in validation {
+        let (n_r, n_c) = (row + r, col + c);
+
+        // Case: out of bounds index
+        if n_r < 0 || n_c < 0 || n_r >= row_len || n_c >= col_len {
+            return false;
+        }
+
+        let curr_char = matrix[n_r as usize][n_c as usize];
+        if !curr_char.eq(&expected_char) {
+            // dbg!(curr_char, expected_char, (row, col), (n_r, n_c));
+            return false;
+        }
+
+        println!();
+    }
+
+    true
+}
+
+fn traverse_xmas_straight(
+    matrix: &Vec<Vec<char>>,
+    row: isize,
+    col: isize,
+    dir: (isize, isize),
+) -> i32 {
     let char_map: HashMap<char, char> = HashMap::from([('x', 'm'), ('m', 'a'), ('a', 's')]);
 
     let mut stack = vec![(row, col)];
@@ -129,7 +200,6 @@ fn traverse_xmas_snake(matrix: &Vec<Vec<char>>, row: isize, col: isize) -> i32 {
     while let Some((s_r, s_c)) = stack.pop() {
         // 'as' keyword will wrap around the variable
         let curr_char = matrix[s_r as usize][s_c as usize];
-        dbg!(curr_char, s_r, s_c);
 
         // Found xmas
         if curr_char.eq(&'s') {
@@ -150,11 +220,9 @@ fn traverse_xmas_snake(matrix: &Vec<Vec<char>>, row: isize, col: isize) -> i32 {
             let next_char = char_map
                 .get(&curr_char)
                 .expect("input guarantees xmas characters");
-            dbg!(next_char);
 
             // Case: matching next character
             if matrix[n_r as usize][n_c as usize].eq(next_char) {
-                dbg!((n_r, n_c));
                 stack.push((n_r, n_c));
             }
         });
@@ -166,7 +234,21 @@ fn traverse_xmas_snake(matrix: &Vec<Vec<char>>, row: isize, col: isize) -> i32 {
 #[test]
 fn test_day_1() {
     let res = count_xmas(create_matrix());
-    dbg!(res);
+    assert_eq!(res.0, 2358);
+    assert_eq!(res.1, 1737);
+}
+
+#[test]
+fn test_small_x_mas() {
+    let input = vec![
+        vec!['m', 'x', 'm'],
+        vec!['m', 'a', 's'],
+        vec!['s', 'x', 's'],
+    ];
+
+    let correct_count = count_xmas(input);
+    assert_eq!(correct_count.0, 0);
+    assert_eq!(correct_count.1, 1);
 }
 
 #[test]
@@ -178,13 +260,13 @@ fn test_traverse_xmas_straight() {
         vec!['s', 'm', 'a', 's'],
     ];
 
-    let res = traverse_xmas_straight(&input, 0, 0, (0,1));
+    let res = traverse_xmas_straight(&input, 0, 0, (0, 1));
     assert_eq!(res, 1);
-    let res = traverse_xmas_straight(&input, 0, 0, (1,1));
+    let res = traverse_xmas_straight(&input, 0, 0, (1, 1));
     assert_eq!(res, 1);
-    let res = traverse_xmas_straight(&input, 0, 0, (0,-1));
+    let res = traverse_xmas_straight(&input, 0, 0, (0, -1));
     assert_eq!(res, 0);
-    let res = traverse_xmas_straight(&input, 0, 0, (1,-1));
+    let res = traverse_xmas_straight(&input, 0, 0, (1, -1));
     assert_eq!(res, 0);
 }
 
@@ -203,7 +285,8 @@ fn test_traverse_xmas() {
     // Wrong since it returns 4, which makes it like xmas being a snake formation (not just a straight line)
     // assert_eq!(res, 2);
     let correct_count = count_xmas(input);
-    assert_eq!(correct_count, 3);
+    assert_eq!(correct_count.0, 3);
+    assert_eq!(correct_count.1, 2);
 }
 
 #[test]
